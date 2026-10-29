@@ -182,8 +182,8 @@ impl<'a, 'tcx> InspectCandidate<'a, 'tcx> {
     ) -> InspectGoal<'a, 'tcx> {
         let infcx = self.goal.infcx;
         match goal.predicate.kind().no_bound_vars() {
-            Some(ty::PredicateKind::NormalizesTo(ty::NormalizesTo { .. })) => {
-                // We don't handle `NormalizesTo` as a nested goal
+            Some(ty::PredicateKind::SelectAssocCandidate(ty::SelectAssocCandidate { .. })) => {
+                // We don't handle `SelectAssocCandidate` as a nested goal
                 unreachable!()
             }
             _ => {
@@ -345,8 +345,7 @@ impl<'a, 'tcx> InspectGoal<'a, 'tcx> {
             result,
             required_depth,
         } = root;
-        // If there's a normalizes-to goal, AND the evaluation result with the result of
-        // constraining the normalizes-to RHS and computing the nested goals.
+
         let result = result.map(|ok| ok.value.certainty);
 
         InspectGoal {

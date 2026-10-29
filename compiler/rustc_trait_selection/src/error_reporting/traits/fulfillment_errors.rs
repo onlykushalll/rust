@@ -803,7 +803,7 @@ impl<'a, 'tcx> TypeErrCtxt<'a, 'tcx> {
                     | ty::PredicateKind::ConstEquate { .. }
                     | ty::PredicateKind::Ambiguous
                     | ty::PredicateKind::Clause(ty::ClauseKind::UnstableFeature { .. })
-                    | ty::PredicateKind::NormalizesTo { .. }
+                    | ty::PredicateKind::SelectAssocCandidate { .. }
                     | ty::PredicateKind::Clause(ty::ClauseKind::ConstArgHasType { .. })
                     | ty::PredicateKind::Clause(ty::ClauseKind::CompressedTrait(..)) => {
                         span_bug!(

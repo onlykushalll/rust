@@ -128,6 +128,6 @@ fn build_scoped_thread_exit() {
             |pool| pool.install(|| {}),
         )
         .expect("thread pool created");
-    // `build_scoped` returns before the threads have exited.
-    assert_eq!(EXITED.load(Ordering::SeqCst), 0);
+    // `build_scoped` waits for the threads to exit.
+    assert_eq!(EXITED.load(Ordering::SeqCst), NUM_THREADS);
 }

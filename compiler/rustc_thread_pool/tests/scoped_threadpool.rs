@@ -97,3 +97,37 @@ fn build_scoped_tls_threadpool() {
         });
     });
 }
+
+#[test]
+#[cfg_attr(any(target_os = "emscripten", target_family = "wasm"), ignore)]
+fn build_scoped_thread_exit() {
+    use std::sync::atomic::{AtomicUsize, Ordering};
+    use std::time::Duration;
+
+    const NUM_THREADS: usize = 4;
+    static EXITED: AtomicUsize = AtomicUsize::new(0);
+
+    struct OnExit;
+    impl Drop for OnExit {
+        fn drop(&mut self) {
+            // Make exiting slow enough that returning early is visible.
+            std::thread::sleep(Duration::from_millis(10));
+            EXITED.fetch_add(1, Ordering::SeqCst);
+        }
+    }
+    // TLS destructors run while the thread exits, after its closure has returned.
+    thread_local!(static ON_EXIT: OnExit = const { OnExit });
+
+    ThreadPoolBuilder::new()
+        .num_threads(NUM_THREADS)
+        .build_scoped(
+            |thread| {
+                ON_EXIT.with(|_| {});
+                thread.run()
+            },
+            |pool| pool.install(|| {}),
+        )
+        .expect("thread pool created");
+    // `build_scoped` returns before the threads have exited.
+    assert_eq!(EXITED.load(Ordering::SeqCst), 0);
+}

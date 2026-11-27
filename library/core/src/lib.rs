@@ -165,6 +165,9 @@
 #![feature(uint_carryless_mul)]
 #![feature(unboxed_closures)]
 #![feature(unsized_fn_params)]
+
+// Stabilize raw slice getter methods
+
 #![feature(with_negative_coherence)]
 // tidy-alphabetical-end
 //

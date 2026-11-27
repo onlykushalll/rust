@@ -204,6 +204,76 @@ impl<T: Sized> NonNull<T> {
 }
 
 impl<T: PointeeSized> NonNull<T> {
+    // Raw slice methods
+    impl<T> NonNull<[T]> {
+        /// Converts a raw non-null slice pointer to a non-null pointer to the element at index 0.
+        ///
+        /// This is equivalent to `self.cast()` but is more explicit about the intent.
+        ///
+        /// # Examples
+        ///
+        /// ```rust
+        /// let arr = [1, 2, 3];
+        /// let ptr = NonNull::new(arr.as_ptr()).unwrap();
+        /// let elem_ptr = ptr.as_non_null_ptr();
+        /// assert_eq!(elem_ptr, NonNull::new(arr.as_ptr()).unwrap());
+        /// ```
+        #[stable(feature = "slice_ptr_get", since = "1.80.0")]
+        #[rustc_const_stable(feature = "slice_ptr_get", since = "1.80.0")]
+        #[inline(always)]
+        pub const fn as_non_null_ptr(self) -> NonNull<T> {
+            self.cast()
+        }
+
+        /// Converts a raw non-null slice pointer to a raw mutable pointer to the element at index 0.
+        ///
+        /// This is equivalent to `self.as_mut_ptr()` but is more explicit about the intent.
+        ///
+        /// # Examples
+        ///
+        /// ```rust
+        /// let mut arr = [1, 2, 3];
+        /// let ptr = NonNull::new(arr.as_mut_ptr()).unwrap();
+        /// let elem_ptr = ptr.as_mut_ptr();
+        /// assert_eq!(elem_ptr, arr.as_mut_ptr());
+        /// ```
+        #[stable(feature = "slice_ptr_get", since = "1.80.0")]
+        #[rustc_const_stable(feature = "slice_ptr_get", since = "1.80.0")]
+        #[inline(always)]
+        pub const fn as_mut_ptr(self) -> *mut T {
+            self.as_ptr().cast_mut()
+        }
+
+        /// Returns a non-null pointer to the element at the specified index in the slice.
+        ///
+        /// This is equivalent to `self.get_unchecked_mut(index)` but is more explicit about the intent.
+        ///
+        /// # Safety
+        ///
+        /// - `index` must be in bounds of the slice.
+        /// - The pointer must be valid for the lifetime of the slice.
+        ///
+        /// # Examples
+        ///
+        /// ```rust
+        /// let mut arr = [1, 2, 3];
+        /// let ptr = NonNull::new(arr.as_mut_ptr()).unwrap();
+        /// unsafe {
+        ///     let elem_ptr = ptr.get_unchecked_mut(1);
+        ///     *elem_ptr = 4;
+        ///     assert_eq!(arr[1], 4);
+        /// }
+        /// ```
+        #[stable(feature = "slice_ptr_get", since = "1.80.0")]
+        #[inline]
+        pub unsafe fn get_unchecked_mut<I>(self, index: I) -> NonNull<I::Output>
+        where
+            I: SliceIndex<[T]>,
+        {
+            NonNull::new_unchecked(index.get_unchecked_mut(self.as_ptr()))
+        }
+    }
+
     /// Creates a new `NonNull`.
     ///
     /// Note that if you have an `&mut`, you can use the safe [`from_mut`] instead.

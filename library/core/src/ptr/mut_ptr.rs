@@ -6,6 +6,59 @@ use crate::mem::{self, SizedTypeProperties};
 use crate::slice::{self, SliceIndex};
 
 impl<T: PointeeSized> *mut T {
+
+    // Raw slice methods
+    impl<T> *mut [T] {
+        /// Converts a raw mutable slice pointer to a raw pointer to the element at index 0.
+        ///
+        /// This is equivalent to `self as *mut T` but is more explicit about the intent.
+        ///
+        /// # Examples
+        ///
+        /// ```rust
+        /// let mut arr = [1, 2, 3];
+        /// let ptr: *mut [i32] = arr.as_mut_ptr();
+        /// let elem_ptr = ptr.as_mut_ptr();
+        /// assert_eq!(elem_ptr, arr.as_mut_ptr());
+        /// ```
+        #[stable(feature = "slice_ptr_get", since = "1.80.0")]
+        #[rustc_const_stable(feature = "slice_ptr_get", since = "1.80.0")]
+        #[inline(always)]
+        pub const fn as_mut_ptr(self) -> *mut T {
+            self.cast::<T>()
+        }
+
+        /// Returns a raw pointer to the element at the specified index in the slice.
+        ///
+        /// This is equivalent to `self.get_unchecked_mut(index)` but is more explicit about the intent.
+        ///
+        /// # Safety
+        ///
+        /// - `index` must be in bounds of the slice.
+        /// - The pointer must be valid for the lifetime of the slice.
+        ///
+        /// # Examples
+        ///
+        /// ```rust
+        /// let mut arr = [1, 2, 3];
+        /// let ptr: *mut [i32] = arr.as_mut_ptr();
+        /// unsafe {
+        ///     let elem_ptr = ptr.get_unchecked_mut(1);
+        ///     *elem_ptr = 4;
+        ///     assert_eq!(arr[1], 4);
+        /// }
+        /// ```
+        #[stable(feature = "slice_ptr_get", since = "1.80.0")]
+        #[inline]
+        pub unsafe fn get_unchecked_mut<I>(self, index: I) -> *mut I::Output
+        where
+            I: SliceIndex<[T]>,
+        {
+            index.get_unchecked_mut(self)
+        }
+    }
+
+    impl<T: PointeeSized> *mut T {
     #[doc = include_str!("docs/is_null.md")]
     ///
     /// # Examples

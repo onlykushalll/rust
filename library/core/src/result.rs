@@ -122,7 +122,7 @@
 //! use std::io::prelude::*;
 //!
 //! let mut file = File::create("valuable_data.txt").unwrap();
-//! file.write_all(b"important message").expect("writing to the file should succeed");
+//! file.write_all(b"important message").expect("failed to write to file");
 //! ```
 //!
 //! You might also simply assert success:
